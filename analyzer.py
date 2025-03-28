@@ -98,6 +98,10 @@ class PANOSAnalyzer:
                 # Use the simplified NAT matcher to get NAT rule info
                 nat_info = self.nat_matcher.match_connection(conn)
                 
+                # Update connection direction if not already set
+                if not conn["direction"] and 'direction' in nat_info:
+                    conn["direction"] = nat_info['direction']
+                
                 # Add NAT rule information if available
                 if nat_info and nat_info.get('nat_rule'):
                     conn["nat_rule"] = nat_info['nat_rule']
@@ -105,9 +109,11 @@ class PANOSAnalyzer:
                     # Add NAT type if available
                     if nat_info.get('nat_type'):
                         conn["nat_type"] = nat_info['nat_type']
-                    
-                    # Add source address objects and groups if available
-                    if 'address_objects' in nat_info and 'source' in nat_info['address_objects']:
+                
+                # Add address objects and groups if available
+                if 'address_objects' in nat_info:
+                    # Add source address objects and groups
+                    if 'source' in nat_info['address_objects']:
                         source_objects = nat_info['address_objects']['source']
                         
                         if 'objects' in source_objects and source_objects['objects']:
@@ -116,8 +122,8 @@ class PANOSAnalyzer:
                         if 'groups' in source_objects and source_objects['groups']:
                             conn["source_addr_groups"] = ";".join(source_objects['groups'])
                     
-                    # Add destination address objects and groups if available
-                    if 'address_objects' in nat_info and 'destination' in nat_info['address_objects']:
+                    # Add destination address objects and groups
+                    if 'destination' in nat_info['address_objects']:
                         dest_objects = nat_info['address_objects']['destination']
                         
                         if 'objects' in dest_objects and dest_objects['objects']:
@@ -159,7 +165,11 @@ class PANOSAnalyzer:
             "last_seen": None,
             "direction": log.get("direction", ""),
             "nat_rule": "",  # Add empty nat_rule field
-            "nat_type": ""   # Add empty nat_type field
+            "nat_type": "",  # Add empty nat_type field
+            "source_addr_objects": "",  # Add empty fields for address objects
+            "source_addr_groups": "",   # Add empty fields for address groups
+            "destination_addr_objects": "",  # Add empty fields for destination objects
+            "destination_addr_groups": ""    # Add empty fields for destination groups
         }
         
         # Add NAT fields if they exist in the log
