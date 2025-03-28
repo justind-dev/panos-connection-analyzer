@@ -22,7 +22,7 @@ from typing import Dict, Optional
 import pandas as pd
 
 # Configure logging to show info level logs
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger("nat_matcher")
 
 try:
